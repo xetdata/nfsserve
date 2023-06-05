@@ -1,0 +1,37 @@
+[package]
+name = "nfsserve"
+version = "0.10.1"
+edition = "2021"
+authors = ["Yucheng Low <ylow@xethub.com>"]
+description = "A Rust NFS Server implementation"
+homepage = "https://github.com/xetdata/nfsserve"
+repository = "https://github.com/xetdata/nfsserve"
+readme = "README.md"
+keywords = ["nfs"]
+license = "BSD-3-Clause"
+categories = ["network-programming", "filesystem"]
+publish = true
+include = ["src/**/*", "src/*", "Cargo.toml", "LICENSE", "README.md"]
+
+
+[lib]
+doctest = false
+
+[dependencies]
+bytestream = "0.4"
+byteorder = "1.4"
+num-traits = "0.2"
+num-derive = "0.3"
+tokio = {version="1", features=["net", "macros","rt-multi-thread", "io-util", "sync", "fs"]}
+futures = "0.3.21"
+tracing = "0.1.31"
+tracing-attributes = "0.1"
+tracing-subscriber = {version = "0.3", features = ["tracing-log"]}
+anyhow = "1"
+async-trait = "0.1.9"
+smallvec = "1.10.0"
+intaglio = "1.6"
+filetime = "0.2"
+
+[features]
+strict = []
