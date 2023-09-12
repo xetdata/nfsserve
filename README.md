@@ -1,14 +1,80 @@
-NFS Server
-==========
-Ihis is an incomplete implementation. 
-More things in Mount Protocol and NFS Protocol has to be implemented.
+Rust NFSv3 Server
+=================
+Ihis is an incomplete but very functional implementation of an NFSv3 server
+in Rust.
 
-This provides an NFS Server. You simply need to implement the vfs::NFSFileSystem
+Why? You may ask. 
+
+I wanted to implement a user-mode file-system mount that is truly cross-platform.
+FUSE works, but has issues.
+
+1. FUSE is annoying to users on Mac and Windows (drivers necessary).
+2. It takes a lot of care to build a FUSE driver for remote filesystems. 
+NFS clients however have a lot of historical robustification for
+slow-responding, or perhaps, never-responding servers. 
+3. The OS is pretty good at caching NFS. There are established principles for 
+cache eviction, for metadata, or for data. With a FUSE driver I have to do
+a lot of the work myself.
+
+So, this is a FUSE-like user-mode filesystem API that basically works by 
+creating a localhost NFS server you can mount.
+
+This is used in [pyxet](https://github.com/xetdata/pyxet) and 
+[xet-core](https://github.com/xetdata/xet-core/) to provide the `xet mount`
+functionality that allows you to mount multi-TB [Xethub](xethub.com/) repository
+anywhere.
+
+
+Run the Demo
+============
+To run the demofs, this will host an NFS server on localhost:11111
+```
+cargo build
+./target/debug/nfsserve 
+```
+
+To mount. On Linux (sudo may be required):
+```
+mkdir demo
+mount.nfs -o user,noacl,nolock,vers=3,tcp,wsize=1048576,rsize=131072,actimeo=120,port=11111,mountport=11111 localhost:/ demo
+```
+
+On Mac:
+```
+mkdir demo
+mount_nfs -o nolocks,vers=3,tcp,rsize=131072,actimeo=120,port=11111,mountport=11111 localhost:/ demo
+```
+
+On Windows (Pro required as Home does not have NFS client):
+```
+mount.exe -o anon,nolock,mtype=soft,fileaccess=6,casesensitive,lang=ansi,rsize=128,wsize=128,timeout=60,retry=2 \\127.0.0.1\\ X:
+```
+
+Usage
+=====
+
+You simply need to implement the vfs::NFSFileSystem
 trait. See demofs.rs for an example and bin/main.rs for how to actually start
 a service. The interface generally not difficult to implement; demanding mainly
 the ability to associate every file system object (directory/file) with a 64-bit
 ID. Directory listing can be a bit complicated due to the pagination requirements.
 
+TODO and Seeking Contributors
+=============================
+ - More things in Mount Protocol and NFS Protocol has to be implemented.
+ There are a bunch of messages that reply as "Unavailable". For instance, 
+ we implement `READDIR_PLUS` but not `READDIR` which is usually fine, except
+ that Windows insists on always trying READDIR first. 
+ Link creation is also not supported.
+ - The RPC message handling in `nfs_handlers.rs` leaves a lot to be desired.
+ The response serialization is very manual. Some cleanup will be good.
+ - Windows mount "kinda" works (only on Windows 11 Pro with the NFS server),
+ but prints a lot of garbage due to various unimplemented APIs. Windows 11
+ somehow tries to poll with very old NFS protocols constantly.
+ - Many many perf optimizations. 
+ - Maybe pull in the mount command from [xet-core](https://github.com/xetdata/xet-core/blob/main/rust/gitxetcore/src/xetmnt/mod.rs)
+ so the user does not need to remember the `-o` incantations above.
+ - Maybe make an SMB3 implementation so we can work on Windows Home edition
 
 Relevant RFCs
 =============
@@ -17,21 +83,6 @@ Relevant RFCs
  - NFS is at RFC 1813 https://datatracker.ietf.org/doc/html/rfc1813
  - NFS Mount Protocol is at RFC 1813 Appendix I. https://datatracker.ietf.org/doc/html/rfc1813#appendix-I
  - PortMapper is at RFC 1057 Appendix A https://datatracker.ietf.org/doc/html/rfc1057#appendix-A
-
-Messaging
-=========
-The basic way a message works is:
-1. We read a collection of fragments off a TCP stream 
-(a 4 byte length header followed by a bunch of bytes)
-2. We assemble the fragments into a record
-3. The Record is of a SUN RPC message type.
-4. A message tells us 3 pieces of information,
-     - The RPC Program (just an integer denoting
-      a protocol "class". For instance NFS protocol is 100003, the Portmapper protocol is 100000).
-     - The version of the RPC program (ex: 3 = NFSv3, 4 = NFSv4, etc)
-     - The method invoked (Which NFS method to call) (See for instance nfs.rs top comment for the list)
-5. Continuing to decode the message will give us the arguments of the method
-6. And we take the method response, wrap it around a record and return it. 
 
 Basic Source Layout
 ===================
@@ -47,6 +98,21 @@ Basic Source Layout
  - mount.rs/mount\_handlers.rs: The XDR structures required by the Mount protocol and the Mount RPC handlers.
  - nfs.rs/nfs\_handlers.rs: The XDR structures required by the NFS protocol and the NFS RPC handlers.
 
+
+More More Details Than Necessary
+================================
+The basic way a message works is:
+1. We read a collection of fragments off a TCP stream 
+(a 4 byte length header followed by a bunch of bytes)
+2. We assemble the fragments into a record
+3. The Record is of a SUN RPC message type.
+4. A message tells us 3 pieces of information,
+     - The RPC Program (just an integer denoting
+      a protocol "class". For instance NFS protocol is 100003, the Portmapper protocol is 100000).
+     - The version of the RPC program (ex: 3 = NFSv3, 4 = NFSv4, etc)
+     - The method invoked (Which NFS method to call) (See for instance nfs.rs top comment for the list)
+5. Continuing to decode the message will give us the arguments of the method
+6. And we take the method response, wrap it around a record and return it. 
 
 Portmapper
 ----------
