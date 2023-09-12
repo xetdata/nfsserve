@@ -6,8 +6,9 @@ in Rust.
 Why? You may ask. 
 
 I wanted to implement a user-mode file-system mount that is truly cross-platform.
-FUSE works, but has issues.
+What is a protocol that pretty much every OS supports? NFS.
 
+Why not FUSE you may ask:
 1. FUSE is annoying to users on Mac and Windows (drivers necessary).
 2. It takes a lot of care to build a FUSE driver for remote filesystems. 
 NFS clients however have a lot of historical robustification for
@@ -17,7 +18,7 @@ cache eviction, for metadata, or for data. With a FUSE driver I have to do
 a lot of the work myself.
 
 So, this is a FUSE-like user-mode filesystem API that basically works by 
-creating a localhost NFS server you can mount.
+creating a localhost NFSv3 server you can mount.
 
 This is used in [pyxet](https://github.com/xetdata/pyxet) and 
 [xet-core](https://github.com/xetdata/xet-core/) to provide the `xet mount`
@@ -77,6 +78,9 @@ TODO and Seeking Contributors
  - Maybe pull in the mount command from [xet-core](https://github.com/xetdata/xet-core/blob/main/rust/gitxetcore/src/xetmnt/mod.rs)
  so the user does not need to remember the `-o` incantations above.
  - Maybe make an SMB3 implementation so we can work on Windows Home edition
+ - NFSv4 has some write performance optimizations that would be quite nice.
+ The protocol is a bit more involving to implement though as it is somewhat
+ stateful.
 
 Relevant RFCs
 =============
