@@ -50,6 +50,8 @@ On Windows (Pro required as Home does not have NFS client):
 mount.exe -o anon,nolock,mtype=soft,fileaccess=6,casesensitive,lang=ansi,rsize=128,wsize=128,timeout=60,retry=2 \\127.0.0.1\\ X:
 ```
 
+Note that the demo filesystem is *writable*. 
+
 Usage
 =====
 
