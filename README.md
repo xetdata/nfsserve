@@ -64,6 +64,7 @@ ID. Directory listing can be a bit complicated due to the pagination requirement
 
 TODO and Seeking Contributors
 =============================
+ - Improve documentation
  - More things in Mount Protocol and NFS Protocol has to be implemented.
  There are a bunch of messages that reply as "Unavailable". For instance, 
  we implement `READDIR_PLUS` but not `READDIR` which is usually fine, except
