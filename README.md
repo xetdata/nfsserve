@@ -25,6 +25,7 @@ This is used in [pyxet](https://github.com/xetdata/pyxet) and
 functionality that allows you to mount multi-TB [Xethub](xethub.com/) repository
 anywhere.
 
+This is a blogpost explaining our rationale: https://about.xethub.com/blog/nfs-fuse-why-we-built-nfs-server-rust
 
 Run the Demo
 ============
