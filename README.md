@@ -22,7 +22,7 @@ creating a localhost NFSv3 server you can mount.
 
 This is used in [pyxet](https://github.com/xetdata/pyxet) and 
 [xet-core](https://github.com/xetdata/xet-core/) to provide the `xet mount`
-functionality that allows you to mount multi-TB [Xethub](xethub.com/) repository
+functionality that allows you to mount multi-TB [Xethub](https://about.xethub.com) repository
 anywhere.
 
 This is a blogpost explaining our rationale: https://about.xethub.com/blog/nfs-fuse-why-we-built-nfs-server-rust
