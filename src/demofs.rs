@@ -26,7 +26,7 @@ fn make_file(name: &str, id: fileid3, parent: fileid3, contents: &[u8]) -> FSEnt
     let attr = fattr3 {
         ftype: ftype3::NF3REG,
         mode: 0o755,
-        nlink: 0,
+        nlink: 1,
         uid: 507,
         gid: 507,
         size: contents.len() as u64,
@@ -51,7 +51,7 @@ fn make_dir(name: &str, id: fileid3, parent: fileid3, contents: Vec<fileid3>) ->
     let attr = fattr3 {
         ftype: ftype3::NF3DIR,
         mode: 0o777,
-        nlink: 0,
+        nlink: 1,
         uid: 507,
         gid: 507,
         size: 0,
