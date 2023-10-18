@@ -1,6 +1,6 @@
 Rust NFSv3 Server
 =================
-Ihis is an incomplete but very functional implementation of an NFSv3 server
+This is an incomplete but very functional implementation of an NFSv3 server
 in Rust.
 
 Why? You may ask. 
