@@ -76,6 +76,11 @@ impl fmt::Debug for nfsstring {
         write!(f, "{:?}", String::from_utf8_lossy(&self.0))
     }
 }
+impl fmt::Display for nfsstring {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", String::from_utf8_lossy(&self.0))
+    }
+}
 pub type opaque = u8;
 pub type filename3 = nfsstring;
 pub type nfspath3 = nfsstring;
