@@ -15,8 +15,6 @@ mod portmap_handlers;
 pub mod nfs;
 mod nfs_handlers;
 
-pub mod demofs;
-
 #[cfg(not(target_os = "windows"))]
 pub mod fs_util;
 

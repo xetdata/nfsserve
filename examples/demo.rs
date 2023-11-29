@@ -1,11 +1,15 @@
-use crate::nfs;
-use crate::nfs::{
-    fattr3, fileid3, filename3, ftype3, nfspath3, nfsstat3, nfstime3, sattr3, specdata3,
-};
-use crate::vfs::{DirEntry, NFSFileSystem, ReadDirResult, VFSCapabilities};
-use async_trait::async_trait;
 use std::sync::Mutex;
 use std::time::SystemTime;
+
+use async_trait::async_trait;
+
+use nfsserve::{
+    nfs::{
+        self, fattr3, fileid3, filename3, ftype3, nfspath3, nfsstat3, nfstime3, sattr3, specdata3,
+    },
+    tcp::*,
+    vfs::{DirEntry, NFSFileSystem, ReadDirResult, VFSCapabilities},
+};
 
 #[derive(Debug, Clone)]
 enum FSContents {
@@ -369,3 +373,19 @@ impl NFSFileSystem for DemoFS {
         return Err(nfsstat3::NFS3ERR_NOTSUPP);
     }
 }
+
+const HOSTPORT: u32 = 11111;
+
+#[tokio::main]
+async fn main() {
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::DEBUG)
+        .with_writer(std::io::stderr)
+        .init();
+    let listener = NFSTcpListener::bind(&format!("127.0.0.1:{HOSTPORT}"), DemoFS::default())
+        .await
+        .unwrap();
+    listener.handle_forever().await.unwrap();
+}
+// Test with
+// mount -t nfs -o nolocks,vers=3,tcp,port=12000,mountport=12000,soft 127.0.0.1:/ mnt/
