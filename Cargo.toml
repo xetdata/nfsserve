@@ -29,17 +29,21 @@ tracing-attributes = "0.1"
 anyhow = "1"
 async-trait = "0.1.9"
 smallvec = "1.10.0"
-intaglio = "1.6"
 filetime = "0.2"
 
 # demo
 tracing-subscriber = { version = "0.3", features = ["tracing-log"], optional = true }
+intaglio = { version = "1.6", optional = true }
 
 [features]
 strict = []
-demo = ["tracing-subscriber", "tokio/rt-multi-thread"]
+demo = ["tracing-subscriber", "tokio/rt-multi-thread", "intaglio"]
 
 
 [[example]]
 name = "demo"
+required-features = ["demo"]
+
+[[example]]
+name = "mirrorfs"
 required-features = ["demo"]

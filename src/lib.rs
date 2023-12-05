@@ -18,8 +18,5 @@ mod nfs_handlers;
 #[cfg(not(target_os = "windows"))]
 pub mod fs_util;
 
-#[cfg(not(target_os = "windows"))]
-pub mod mirrorfs;
-
 pub mod tcp;
 pub mod vfs;

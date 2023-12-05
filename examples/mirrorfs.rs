@@ -1,9 +1,3 @@
-use crate::fs_util::*;
-use crate::nfs::*;
-use crate::vfs::{DirEntry, NFSFileSystem, ReadDirResult, VFSCapabilities};
-use async_trait::async_trait;
-use intaglio::osstr::SymbolTable;
-use intaglio::Symbol;
 use std::collections::{BTreeSet, HashMap};
 use std::ffi::{OsStr, OsString};
 use std::fs::Metadata;
@@ -12,9 +6,19 @@ use std::ops::Bound;
 use std::os::unix::ffi::OsStrExt;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicU64, Ordering};
+
+use async_trait::async_trait;
+use intaglio::osstr::SymbolTable;
+use intaglio::Symbol;
 use tokio::fs::{File, OpenOptions};
 use tokio::io::{AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
 use tracing::debug;
+
+use nfsserve::fs_util::*;
+use nfsserve::nfs::*;
+use nfsserve::tcp::{NFSTcp, NFSTcpListener};
+use nfsserve::vfs::{DirEntry, NFSFileSystem, ReadDirResult, VFSCapabilities};
+
 #[derive(Debug, Clone)]
 struct FSEntry {
     name: Vec<Symbol>,
@@ -676,3 +680,26 @@ impl NFSFileSystem for MirrorFS {
         }
     }
 }
+
+const HOSTPORT: u32 = 11111;
+
+#[tokio::main]
+async fn main() {
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::DEBUG)
+        .with_writer(std::io::stderr)
+        .init();
+
+    let path = std::env::args()
+        .nth(1)
+        .expect("must supply directory to mirror");
+    let path = PathBuf::from(path);
+
+    let fs = MirrorFS::new(path);
+    let listener = NFSTcpListener::bind(&format!("127.0.0.1:{HOSTPORT}"), fs)
+        .await
+        .unwrap();
+    listener.handle_forever().await.unwrap();
+}
+// Test with
+// mount -t nfs -o nolocks,vers=3,tcp,port=12000,mountport=12000,soft 127.0.0.1:/ mnt/
