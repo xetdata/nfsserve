@@ -22,16 +22,28 @@ bytestream = "0.4"
 byteorder = "1.4"
 num-traits = "0.2"
 num-derive = "0.3"
-tokio = {version="1", features=["net", "macros","rt-multi-thread", "io-util", "sync", "fs"]}
+tokio = { version="1", features = [ "net", "io-util", "sync", "fs", "rt", "macros" ], default-features = false }
 futures = "0.3.21"
 tracing = "0.1.31"
 tracing-attributes = "0.1"
-tracing-subscriber = {version = "0.3", features = ["tracing-log"]}
 anyhow = "1"
 async-trait = "0.1.9"
 smallvec = "1.10.0"
-intaglio = "1.6"
 filetime = "0.2"
+
+# demo
+tracing-subscriber = { version = "0.3", features = ["tracing-log"], optional = true }
+intaglio = { version = "1.6", optional = true }
 
 [features]
 strict = []
+demo = ["tracing-subscriber", "tokio/rt-multi-thread", "intaglio"]
+
+
+[[example]]
+name = "demo"
+required-features = ["demo"]
+
+[[example]]
+name = "mirrorfs"
+required-features = ["demo"]

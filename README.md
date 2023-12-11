@@ -31,8 +31,8 @@ Run the Demo
 ============
 To run the demofs, this will host an NFS server on localhost:11111
 ```
-cargo build
-./target/debug/nfsserve 
+cargo build --example demo --features demo
+./target/debug/examples/demo
 ```
 
 To mount. On Linux (sudo may be required):
