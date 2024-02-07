@@ -4,6 +4,17 @@ use std::cmp::Ordering;
 use std::sync::Once;
 use std::time::SystemTime;
 #[derive(Default, Debug)]
+pub struct DirEntrySimple {
+    pub fileid: fileid3,
+    pub name: filename3
+}
+#[derive(Default, Debug)]
+pub struct ReadDirSimpleResult {
+    pub entries: Vec<DirEntrySimple>,
+    pub end: bool
+}
+
+#[derive(Default, Debug)]
 pub struct DirEntry {
     pub fileid: fileid3,
     pub name: filename3,
@@ -13,6 +24,19 @@ pub struct DirEntry {
 pub struct ReadDirResult {
     pub entries: Vec<DirEntry>,
     pub end: bool,
+}
+
+impl ReadDirSimpleResult {
+    fn from_readdir_result(result: &ReadDirResult) -> ReadDirSimpleResult {
+        let entries: Vec<DirEntrySimple> = result.entries.iter().map(|e| DirEntrySimple {
+            fileid: e.fileid,
+            name: e.name.clone()
+        }).collect();
+        ReadDirSimpleResult {
+            entries,
+            end: result.end
+        }
+    }
 }
 
 static mut GENERATION_NUMBER: u64 = 0;
@@ -158,6 +182,16 @@ pub trait NFSFileSystem: Sync {
         start_after: fileid3,
         max_entries: usize,
     ) -> Result<ReadDirResult, nfsstat3>;
+
+    /// Simple version of readdir.
+    /// Only need to return filename and id
+    async fn readdir_simple(
+        &self,
+        dirid: fileid3,
+        count: usize,
+    ) -> Result<ReadDirSimpleResult, nfsstat3> {
+        Ok(ReadDirSimpleResult::from_readdir_result(&self.readdir(dirid, 0, count).await?))
+    }
 
     /// Makes a symlink with the following attributes.
     /// If not supported due to readonly file system
