@@ -6,12 +6,12 @@ use std::time::SystemTime;
 #[derive(Default, Debug)]
 pub struct DirEntrySimple {
     pub fileid: fileid3,
-    pub name: filename3
+    pub name: filename3,
 }
 #[derive(Default, Debug)]
 pub struct ReadDirSimpleResult {
     pub entries: Vec<DirEntrySimple>,
-    pub end: bool
+    pub end: bool,
 }
 
 #[derive(Default, Debug)]
@@ -28,13 +28,17 @@ pub struct ReadDirResult {
 
 impl ReadDirSimpleResult {
     fn from_readdir_result(result: &ReadDirResult) -> ReadDirSimpleResult {
-        let entries: Vec<DirEntrySimple> = result.entries.iter().map(|e| DirEntrySimple {
-            fileid: e.fileid,
-            name: e.name.clone()
-        }).collect();
+        let entries: Vec<DirEntrySimple> = result
+            .entries
+            .iter()
+            .map(|e| DirEntrySimple {
+                fileid: e.fileid,
+                name: e.name.clone(),
+            })
+            .collect();
         ReadDirSimpleResult {
             entries,
-            end: result.end
+            end: result.end,
         }
     }
 }
@@ -190,7 +194,9 @@ pub trait NFSFileSystem: Sync {
         dirid: fileid3,
         count: usize,
     ) -> Result<ReadDirSimpleResult, nfsstat3> {
-        Ok(ReadDirSimpleResult::from_readdir_result(&self.readdir(dirid, 0, count).await?))
+        Ok(ReadDirSimpleResult::from_readdir_result(
+            &self.readdir(dirid, 0, count).await?,
+        ))
     }
 
     /// Makes a symlink with the following attributes.

@@ -23,6 +23,10 @@ use tokio::sync::mpsc;
 // Information from RFC 5531
 // https://datatracker.ietf.org/doc/html/rfc5531
 
+const NFS_ACL_PROGRAM: u32 = 100227;
+const NFS_ID_MAP_PROGRAM: u32 = 100270;
+const NFS_METADATA_PROGRAM: u32 = 200024;
+
 async fn handle_rpc(
     input: &mut impl Read,
     output: &mut impl Write,
@@ -48,6 +52,13 @@ async fn handle_rpc(
             portmap_handlers::handle_portmap(xid, call, input, output, &context)
         } else if call.prog == mount::PROGRAM {
             mount_handlers::handle_mount(xid, call, input, output, &context).await
+        } else if call.prog == NFS_ACL_PROGRAM
+            || call.prog == NFS_ID_MAP_PROGRAM
+            || call.prog == NFS_METADATA_PROGRAM
+        {
+            trace!("ignoring NFS_ACL packet");
+            prog_unavail_reply_message(xid).serialize(output)?;
+            Ok(())
         } else {
             warn!(
                 "Unknown RPC Program number {} != {}",
