@@ -9,7 +9,7 @@ use std::{io, net::IpAddr};
 use tokio::io::AsyncWriteExt;
 use tokio::net::TcpListener;
 use tokio::sync::mpsc;
-use tracing::{error, info};
+use tracing::{debug, error, info};
 
 /// A NFS Tcp Connection Handler
 pub struct NFSTcpListener<T: NFSFileSystem + Send + Sync + 'static> {
@@ -38,7 +38,7 @@ async fn process_socket(
     tokio::spawn(async move {
         loop {
             if let Err(e) = message_handler.read().await {
-                info!("Message loop broken due to {:?}", e);
+                debug!("Message loop broken due to {:?}", e);
                 break;
             }
         }
@@ -59,7 +59,7 @@ async fn process_socket(
                         continue;
                     }
                     Err(e) => {
-                        info!("Message handling closed : {:?}", e);
+                        debug!("Message handling closed : {:?}", e);
                         return Err(e.into());
                     }
                 }
@@ -68,7 +68,7 @@ async fn process_socket(
             reply = msgrecvchan.recv() => {
                 match reply {
                     Some(Err(e)) => {
-                        info!("Message handling closed : {:?}", e);
+                        debug!("Message handling closed : {:?}", e);
                         return Err(e);
                     }
                     Some(Ok(msg)) => {
@@ -198,7 +198,8 @@ impl<T: NFSFileSystem + Send + Sync + 'static> NFSTcp for NFSTcpListener<T> {
                 vfs: self.arcfs.clone(),
                 mount_signal: self.mount_signal.clone(),
             };
-            info!("Accepting socket {:?} {:?}", socket, context);
+            info!("Accepting connection from {}", context.client_addr);
+            debug!("Accepting socket {:?} {:?}", socket, context);
             tokio::spawn(async move {
                 let _ = process_socket(socket, context).await;
             });

@@ -791,14 +791,9 @@ XDRStruct!(
 struct entry3 {
     fileid: nfs::fileid3,
     name: nfs::filename3,
-    cookie: nfs::cookie3
+    cookie: nfs::cookie3,
 }
-XDRStruct!(
-    entry3,
-    fileid,
-    name,
-    cookie
-);
+XDRStruct!(entry3, fileid, name, cookie);
 
 #[allow(non_camel_case_types)]
 #[derive(Debug, Default)]
@@ -806,15 +801,9 @@ struct READDIR3args {
     dir: nfs::nfs_fh3,
     cookie: nfs::cookie3,
     cookieverf: nfs::cookieverf3,
-    dircount: nfs::count3
+    dircount: nfs::count3,
 }
-XDRStruct!(
-    READDIR3args,
-    dir,
-    cookie,
-    cookieverf,
-    dircount
-);
+XDRStruct!(READDIR3args, dir, cookie, cookieverf, dircount);
 
 #[allow(non_camel_case_types)]
 #[derive(Debug, Default)]
@@ -1115,7 +1104,7 @@ pub async fn nfsproc3_readdir(
                 let entry = entry3 {
                     fileid: entry.fileid,
                     name: entry.name,
-                    cookie: entry.fileid
+                    cookie: entry.fileid,
                 };
                 // write the entry into a buffer first
                 let mut write_buf: Vec<u8> = Vec::new();
@@ -1129,8 +1118,7 @@ pub async fn nfsproc3_readdir(
                                     + std::mem::size_of::<nfs::cookie3>(); // cookie
                 let added_output_bytes = write_buf.len();
                 // check if we can write without hitting the limits
-                if added_output_bytes + counting_output.bytes_written() < max_bytes_allowed
-                {
+                if added_output_bytes + counting_output.bytes_written() < max_bytes_allowed {
                     trace!("  -- dirent {:?}", entry);
                     // commit the entry
                     ctr += 1;
