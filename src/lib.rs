@@ -4,7 +4,7 @@ mod context;
 mod rpc;
 mod rpcwire;
 mod write_counter;
-mod xdr;
+pub mod xdr;
 
 mod mount;
 mod mount_handlers;
