@@ -1,4 +1,5 @@
 use crate::nfs::*;
+use crate::nfs;
 use async_trait::async_trait;
 use std::cmp::Ordering;
 use std::sync::Once;
@@ -212,6 +213,36 @@ pub trait NFSFileSystem: Sync {
 
     /// Reads a symlink
     async fn readlink(&self, id: fileid3) -> Result<nfspath3, nfsstat3>;
+
+    /// Get static file system Information
+    async fn fsinfo(
+        &self,
+        root_fileid: fileid3,
+    ) -> Result<fsinfo3, nfsstat3> {
+
+        let dir_attr: nfs::post_op_attr = match self.getattr(root_fileid).await {
+            Ok(v) => nfs::post_op_attr::attributes(v),
+            Err(_) => nfs::post_op_attr::Void,
+        };
+
+        let res = fsinfo3 {
+            obj_attributes: dir_attr,
+            rtmax: 1024 * 1024,
+            rtpref: 1024 * 124,
+            rtmult: 1024 * 1024,
+            wtmax: 1024 * 1024,
+            wtpref: 1024 * 1024,
+            wtmult: 1024 * 1024,
+            dtpref: 1024 * 1024,
+            maxfilesize: 128 * 1024 * 1024 * 1024,
+            time_delta: nfs::nfstime3 {
+                seconds: 0,
+                nseconds: 1000000,
+            },
+            properties: nfs::FSF_SYMLINK | nfs::FSF_HOMOGENEOUS | nfs::FSF_CANSETTIME,
+        };
+        Ok(res)
+    }
 
     /// Converts the fileid to an opaque NFS file handle. Optional.
     fn id_to_fh(&self, id: fileid3) -> nfs_fh3 {
