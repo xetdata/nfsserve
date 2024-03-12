@@ -429,41 +429,6 @@ pub async fn nfsproc3_read(
   };
 */
 
-#[allow(non_camel_case_types)]
-#[derive(Debug, Default)]
-struct FSINFO3resok {
-    obj_attributes: nfs::post_op_attr,
-    rtmax: u32,
-    rtpref: u32,
-    rtmult: u32,
-    wtmax: u32,
-    wtpref: u32,
-    wtmult: u32,
-    dtpref: u32,
-    maxfilesize: nfs::size3,
-    time_delta: nfs::nfstime3,
-    properties: u32,
-}
-XDRStruct!(
-    FSINFO3resok,
-    obj_attributes,
-    rtmax,
-    rtpref,
-    rtmult,
-    wtmax,
-    wtpref,
-    wtmult,
-    dtpref,
-    maxfilesize,
-    time_delta,
-    properties
-);
-
-const FSF_LINK: u32 = 0x0001;
-const FSF_SYMLINK: u32 = 0x0002;
-const FSF_HOMOGENEOUS: u32 = 0x0008;
-const FSF_CANSETTIME: u32 = 0x0010;
-
 pub async fn nfsproc3_fsinfo(
     xid: u32,
     input: &mut impl Read,
@@ -484,31 +449,19 @@ pub async fn nfsproc3_fsinfo(
     }
     let id = id.unwrap();
 
-    let dir_attr = match context.vfs.getattr(id).await {
-        Ok(v) => nfs::post_op_attr::attributes(v),
-        Err(_) => nfs::post_op_attr::Void,
-    };
-    let res = FSINFO3resok {
-        obj_attributes: dir_attr,
-        rtmax: 1024 * 1024,
-        rtpref: 1024 * 124,
-        rtmult: 1024 * 1024,
-        wtmax: 1024 * 1024,
-        wtpref: 1024 * 1024,
-        wtmult: 1024 * 1024,
-        dtpref: 1024 * 1024,
-        maxfilesize: 128 * 1024 * 1024 * 1024,
-        time_delta: nfs::nfstime3 {
-            seconds: 0,
-            nseconds: 1000000,
-        },
-        properties: FSF_SYMLINK | FSF_HOMOGENEOUS | FSF_CANSETTIME,
-    };
-
-    make_success_reply(xid).serialize(output)?;
-    nfs::nfsstat3::NFS3_OK.serialize(output)?;
-    debug!(" {:?} ---> {:?}", xid, res);
-    res.serialize(output)?;
+    match context.vfs.fsinfo(id).await {
+        Ok(fsinfo) => {
+            debug!(" {:?} --> {:?}", xid, fsinfo);
+            make_success_reply(xid).serialize(output)?;
+            nfs::nfsstat3::NFS3_OK.serialize(output)?;
+            fsinfo.serialize(output)?;
+        }
+        Err(stat) => {
+            error!("fsinfo error {:?} --> {:?}", xid, stat);
+            make_success_reply(xid).serialize(output)?;
+            stat.serialize(output)?;
+        }
+    }
     Ok(())
 }
 

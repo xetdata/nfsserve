@@ -279,6 +279,59 @@ XDRStruct!(
     fattr3, ftype, mode, nlink, uid, gid, size, used, rdev, fsid, fileid, atime, mtime, ctime
 );
 
+// Section 3.3.19. Procedure 19: FSINFO - Get static file system Information
+// The following constants are used in fsinfo to construct the bitmask 'properties',
+// which represents the file system properties.
+
+/// If this bit is 1 (TRUE), the file system supports hard links.
+pub const FSF_LINK: u32 = 0x0001;
+
+/// If this bit is 1 (TRUE), the file system supports symbolic links.
+pub const FSF_SYMLINK: u32 = 0x0002;
+
+/// If this bit is 1 (TRUE), the information returned by
+/// PATHCONF is identical for every file and directory
+/// in the file system. If it is 0 (FALSE), the client
+/// should retrieve PATHCONF information for each file
+/// and directory as required.
+pub const FSF_HOMOGENEOUS: u32 = 0x0008;
+
+/// If this bit is 1 (TRUE), the server will set the
+/// times for a file via SETATTR if requested (to the
+/// accuracy indicated by time_delta). If it is 0
+/// (FALSE), the server cannot set times as requested.
+pub const FSF_CANSETTIME: u32 = 0x0010;
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Default)]
+pub struct fsinfo3 {
+    pub obj_attributes: post_op_attr,
+    pub rtmax: u32,
+    pub rtpref: u32,
+    pub rtmult: u32,
+    pub wtmax: u32,
+    pub wtpref: u32,
+    pub wtmult: u32,
+    pub dtpref: u32,
+    pub maxfilesize: size3,
+    pub time_delta: nfstime3,
+    pub properties: u32,
+}
+XDRStruct!(
+    fsinfo3,
+    obj_attributes,
+    rtmax,
+    rtpref,
+    rtmult,
+    wtmax,
+    wtpref,
+    wtmult,
+    dtpref,
+    maxfilesize,
+    time_delta,
+    properties
+);
+
 #[allow(non_camel_case_types)]
 #[derive(Copy, Clone, Debug, Default)]
 pub struct wcc_attr {
