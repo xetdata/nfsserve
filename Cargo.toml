@@ -43,7 +43,9 @@ demo = ["tracing-subscriber", "tokio/rt-multi-thread", "intaglio"]
 [[example]]
 name = "demo"
 required-features = ["demo"]
+path = "examples/demo.rs"
 
 [[example]]
 name = "mirrorfs"
 required-features = ["demo"]
+path = "examples/mirrorfs.rs"
