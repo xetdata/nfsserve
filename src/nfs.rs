@@ -53,6 +53,11 @@ impl From<Vec<u8>> for nfsstring {
         Self(value)
     }
 }
+impl From<nfsstring> for Vec<u8> {
+    fn from(value: nfsstring) -> Vec<u8> {
+        value.0
+    }
+}
 impl From<&[u8]> for nfsstring {
     fn from(value: &[u8]) -> Self {
         Self(value.into())
